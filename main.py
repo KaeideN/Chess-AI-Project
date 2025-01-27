@@ -1,33 +1,37 @@
-import numpy as np
+from ultralytics import YOLO
 import cv2 as cv
+import math
+import cvzone
+#from roboflow import Roboflow
 
-capture = cv.VideoCapture(0)
+capture = cv.VideoCapture(1)
+
+classNames = ['black-bishop', 'black-king', 'black-knight', 'black-pawn', 'black-queen', 'black-rook', 'black-root', 'chess-board', 'white-bishop', 'white-king', 'white-knight', 'white-pawn', 'white-queen', 'white-rook']
+# I TRIED TO TEST MY ROBOFLOW MODEL IN HERE BUT YOLO MODEL WHICH I TRAINED WITH MY CHESS DATASET IS WORKING BETTER
+# rf = Roboflow(api_key="2pFN3kK0G95yzTjEdY7R")
+# project = rf.workspace().project("chess-pieces-vc3td/1")
+# model = project.version(v1).model
+model = YOLO("model.pt")
 
 while True:
-    isTrue , frame = capture.read()
-    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    blur_gray = cv.GaussianBlur(gray,(3,3),cv.BORDER_DEFAULT)
-    canny = cv.Canny(blur_gray,125,175)
-    cv.imshow('Canny',canny)
+    isTrue, frame = capture.read()
+    results = model(frame,stream=True)
+    for r in results:
+        boxes = r.boxes
+        for box in boxes:
+            # Bounding box
+            x1, y1, x2, y2 = box.xyxy[0]
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+            cv.rectangle(frame,(x1,y1),(x2,y2),(255,0,255),3)
+            
+            # Confidence
+            conf = math.ceil((box.conf[0]*100)/100)
+            # Class Name
+            cls =int(box.cls[0])
 
-    corners = cv.goodFeaturesToTrack(blur_gray, 100, 0.05, 50)
-    corners = np.rint(corners).astype(int)
-
-    for corner in corners:
-        x,y = corner.ravel()
-        cv.circle(frame,(x,y),5,(255,0,0),-1)
-
-    # ret, corners = cv.findChessboardCorners(gray,(7,6),None)
-
-    # if ret == True :
-    #     frame = cv.drawChessboardCorners(frame, (7,6), corners, ret)
-
-    cv.imshow('Frame',frame)
+            cvzone.putTextRect(frame, f'{classNames[cls]} {conf}',(max(0,x1), max(35,y1)), scale=1,thickness=1)
+    cv.imshow('Cam',frame)
     if cv.waitKey(20) & 0xFF==ord('d'):
         break
-
-
-
-
 capture.release()
 cv.destroyAllWindows()

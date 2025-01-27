@@ -1,0 +1,14 @@
+path: ..C:/Users/enesb/OneDrive/Desktop/YoloV8/datasetChess
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 14
+names: ['black-bishop', 'black-king', 'black-knight', 'black-pawn', 'black-queen', 'black-rook', 'black-root', 'chess-board', 'white-bishop', 'white-king', 'white-knight', 'white-pawn', 'white-queen', 'white-rook']
+
+roboflow:
+  workspace: chess-piece-3i5ki
+  project: chess-pieces-vc3td
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/chess-piece-3i5ki/chess-pieces-vc3td/dataset/1
